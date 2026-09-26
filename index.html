@@ -105,6 +105,7 @@
     font-size:10px; color:var(--muted); white-space:nowrap;
   }
   .bar .yr2{position:absolute; left:calc(100% + 5px);}
+  .bar .yr.yrin{right:auto; left:5px; color:#fff; mix-blend-mode:normal;}
   .e1{background:var(--e1);} .e2{background:var(--e2);} .e3{background:var(--e3);} .e4{background:var(--e4);}
   .bar.split{background:linear-gradient(to right, var(--a) 0 50%, var(--b) 50% 100%);}
 
@@ -291,7 +292,10 @@ function renderLine(){
     } else {
       bar = el('<div class="bar ' + ERA_CLASS[c.era[0]] + '" style="left:' + left + 'px;width:' + w + 'px"></div>');
     }
-    bar.appendChild(el('<span class="yr">' + c.b + '</span>'));
+    // У самых ранних композиторов полоса начинается вплотную к колонке имён —
+    // год рождения там не помещается и обрезается. Тогда ставим его внутрь.
+    const tight = left - NAMEW < 36;
+    bar.appendChild(el('<span class="yr' + (tight ? ' yrin' : '') + '">' + c.b + '</span>'));
     bar.appendChild(el('<span class="yr yr2">' + c.d + '</span>'));
     row.appendChild(bar);
     row.addEventListener('click', () => { st.who = c.n; render(); });
