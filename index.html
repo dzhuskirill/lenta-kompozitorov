@@ -100,7 +100,8 @@
   }
   .row:hover{background:var(--surface-2);}
   .row .nm{
-    position:sticky; left:0; z-index:2; display:inline-block; width:var(--namew,104px); padding-left:10px;
+    position:sticky; left:0; z-index:2; display:inline-flex; align-items:center; gap:7px;
+    width:var(--namew,140px); padding-left:9px; box-sizing:border-box;
     font-size:13px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
     line-height:30px; background:linear-gradient(to right, var(--surface) 86%, transparent);
   }
@@ -116,7 +117,9 @@
   .bar .yr2{position:absolute; left:calc(100% + 5px);}
   .bar .yr.yrin{right:auto; left:5px; color:#fff; mix-blend-mode:normal;}
   .e1{background:var(--e1);} .e2{background:var(--e2);} .e3{background:var(--e3);} .e4{background:var(--e4);}
-  .bar.split{background:linear-gradient(to right, var(--a) 0 50%, var(--b) 50% 100%);}
+  .bar.split{background:linear-gradient(to right, var(--a) 0 var(--cut,50%), var(--b) var(--cut,50%) 100%);}
+  /* Сетка по векам */
+  .vline{position:absolute; top:46px; bottom:0; width:1px; background:var(--line); z-index:0;}
 
   .legend{display:flex; gap:12px; flex-wrap:wrap; font-size:12px; color:var(--muted);}
   .legend i{display:inline-block; width:10px; height:10px; border-radius:3px; margin-right:5px; vertical-align:-1px;}
@@ -134,6 +137,7 @@
   .sect h3{margin:0; font-family:"PT Mono", ui-monospace, monospace; font-size:10.5px; letter-spacing:.14em; text-transform:uppercase; color:var(--muted); font-weight:400;}
   .peers{display:flex; gap:6px; flex-wrap:wrap;}
   .peer{font-size:13px; background:var(--surface-2); border:1px solid var(--line); border-radius:8px; padding:4px 9px; cursor:pointer; font-family:inherit; color:inherit; display:inline-flex; align-items:center; gap:6px;}
+  .fcol{flex:none; width:20px; text-align:center; margin-right:2px;}
   .flag{font-size:14px; line-height:1; font-family:"Apple Color Emoji","Segoe UI Emoji","Noto Color Emoji",sans-serif;}
   .peer:hover{border-color:var(--ink);}
   .note{font-size:12.5px; color:var(--muted); line-height:1.45;}
@@ -177,39 +181,41 @@
 <script>
 /* Композиторы. Годы жизни и страны выгружены из Викиданных: у каждой
    записи есть идентификатор (qid), по которому цифру можно проверить.
-   Эпохи проставлены по годам творчества — границы условные, и игра
-   об этом говорит прямо. Страна дана школьная, историческая рядом. */
+   Эпохи проставлены по годам творчества и идут в хронологическом порядке;
+   split — год, на котором полоса меняет цвет. Границы эпох условные. */
 const COMPOSERS = [
-  {"n": "Вивальди", "full": "Антонио Вивальди", "b": 1678, "d": 1741, "c": "Италия", "hist": ["Венецианская республика"], "era": ["Барокко"], "img": "vivaldi.jpg", "lic": "Public domain", "qid": "Q1340"},
-  {"n": "Гендель", "full": "Георг Фридрих Гендель", "b": 1685, "d": 1759, "c": "Германия", "hist": ["Бранденбург-Пруссия", "Королевство Великобритания", "Священная Римская империя"], "era": ["Барокко"], "img": "gendel.jpg", "lic": "Public domain", "qid": "Q7302"},
-  {"n": "Бах", "full": "Иоганн Себастьян Бах", "b": 1685, "d": 1750, "c": "Германия", "hist": ["Саксен-Эйзенах", "Священная Римская империя"], "era": ["Барокко"], "img": "bah.jpg", "lic": "Public domain", "qid": "Q1339"},
-  {"n": "Гайдн", "full": "Йозеф Гайдн", "b": 1732, "d": 1809, "c": "Австрия", "hist": ["Священная Римская империя"], "era": ["Классицизм"], "img": "gaidn.jpg", "lic": "Public domain", "qid": "Q7349"},
-  {"n": "Моцарт", "full": "Вольфганг Амадей Моцарт", "b": 1756, "d": 1791, "c": "Австрия", "hist": ["Зальцбургское архиепископство"], "era": ["Классицизм"], "img": "mocart.jpg", "lic": "Public domain", "qid": "Q254"},
-  {"n": "Бетховен", "full": "Людвиг ван Бетховен", "b": 1770, "d": 1827, "c": "Германия", "hist": ["Австрийская империя", "Кёльнское курфюршество"], "era": ["Классицизм", "Романтизм"], "img": "bethoven.jpg", "lic": "Public domain", "qid": "Q255"},
-  {"n": "Россини", "full": "Джоаккино Россини", "b": 1792, "d": 1868, "c": "Италия", "hist": ["Королевство Италия", "Папская область"], "era": ["Романтизм"], "img": "rossini.jpg", "lic": "Public domain", "qid": "Q9726"},
-  {"n": "Шуберт", "full": "Франц Шуберт", "b": 1797, "d": 1828, "c": "Австрия", "hist": ["Австрийская империя", "Эрцгерцогство Австрия"], "era": ["Романтизм"], "img": "shubert.jpg", "lic": "Public domain", "qid": "Q7312"},
-  {"n": "Глинка", "full": "Михаил Глинка", "b": 1804, "d": 1857, "c": "Россия", "hist": ["Российская империя"], "era": ["Романтизм"], "img": "glinka.jpg", "lic": "Public domain", "qid": "Q181885"},
-  {"n": "Мендельсон", "full": "Феликс Мендельсон", "b": 1809, "d": 1847, "c": "Германия", "hist": ["Гамбург", "Королевство Саксония"], "era": ["Романтизм"], "img": "mendelson.jpg", "lic": "Public domain", "qid": "Q46096"},
-  {"n": "Шопен", "full": "Фридерик Шопен", "b": 1810, "d": 1849, "c": "Польша", "hist": ["Варшавское герцогство", "Российская империя", "Франция"], "era": ["Романтизм"], "img": "shopen.jpg", "lic": "Public domain", "qid": "Q1268"},
-  {"n": "Шуман", "full": "Роберт Шуман", "b": 1810, "d": 1856, "c": "Германия", "hist": ["Королевство Саксония"], "era": ["Романтизм"], "img": "shuman.jpg", "lic": "Public domain", "qid": "Q7351"},
-  {"n": "Лист", "full": "Ференц Лист", "b": 1811, "d": 1886, "c": "Венгрия", "hist": ["Австрийская империя", "Австро-Венгрия", "Королевство Венгрия"], "era": ["Романтизм"], "img": "list.jpg", "lic": "Public domain", "qid": "Q41309"},
-  {"n": "Вагнер", "full": "Рихард Вагнер", "b": 1813, "d": 1883, "c": "Германия", "hist": ["Королевство Саксония"], "era": ["Романтизм"], "img": "vagner.jpg", "lic": "Public domain", "qid": "Q1511"},
-  {"n": "Верди", "full": "Джузеппе Верди", "b": 1813, "d": 1901, "c": "Италия", "hist": ["Королевство Италия"], "era": ["Романтизм"], "img": "verdi.jpg", "lic": "Public domain", "qid": "Q7317"},
-  {"n": "Брамс", "full": "Иоганнес Брамс", "b": 1833, "d": 1897, "c": "Германия", "hist": ["Гамбург"], "era": ["Романтизм"], "img": "brams.jpg", "lic": "Public domain", "qid": "Q7294"},
-  {"n": "Бородин", "full": "Александр Порфирьевич Бородин", "b": 1833, "d": 1887, "c": "Россия", "hist": ["Российская империя"], "era": ["Романтизм"], "img": "borodin.jpg", "lic": "Public domain", "qid": "Q164004"},
-  {"n": "Бизе", "full": "Жорж Бизе", "b": 1838, "d": 1875, "c": "Франция", "hist": [], "era": ["Романтизм"], "img": "bize.jpg", "lic": "Public domain", "qid": "Q56158"},
-  {"n": "Мусоргский", "full": "Модест Мусоргский", "b": 1839, "d": 1881, "c": "Россия", "hist": ["Российская империя"], "era": ["Романтизм"], "img": "musorgskii.jpg", "lic": "Public domain", "qid": "Q132682"},
-  {"n": "Чайковский", "full": "Пётр Ильич Чайковский", "b": 1840, "d": 1893, "c": "Россия", "hist": ["Российская империя"], "era": ["Романтизм"], "img": "chaikovskii.jpg", "lic": "Public domain", "qid": "Q7315"},
-  {"n": "Дворжак", "full": "Антонин Дворжак", "b": 1841, "d": 1904, "c": "Чехия", "hist": ["Королевство Богемия", "Цислейтания"], "era": ["Романтизм"], "img": "dvorzhak.jpg", "lic": "Public domain", "qid": "Q7298"},
-  {"n": "Григ", "full": "Эдвард Григ", "b": 1843, "d": 1907, "c": "Норвегия", "hist": [], "era": ["Романтизм"], "img": "grig.jpg", "lic": "No restrictions", "qid": "Q80621"},
-  {"n": "Римский-Корсаков", "full": "Николай Римский-Корсаков", "b": 1844, "d": 1908, "c": "Россия", "hist": ["Российская империя"], "era": ["Романтизм"], "img": "rimskii-korsakov.jpg", "lic": "Public domain", "qid": "Q93227"},
-  {"n": "Дебюсси", "full": "Клод Дебюсси", "b": 1862, "d": 1918, "c": "Франция", "hist": [], "era": ["Романтизм", "XX век"], "img": "debyussi.jpg", "lic": "Public domain", "qid": "Q4700"},
-  {"n": "Скрябин", "full": "Александр Скрябин", "b": 1872, "d": 1915, "c": "Россия", "hist": ["Российская империя"], "era": ["Романтизм", "XX век"], "img": "skryabin.jpg", "lic": "Public domain", "qid": "Q185647"},
-  {"n": "Рахманинов", "full": "Сергей Рахманинов", "b": 1873, "d": 1943, "c": "Россия", "hist": ["Российская империя", "США"], "era": ["XX век", "Романтизм"], "img": "rahmaninov.jpg", "lic": "Public domain", "qid": "Q131861"},
-  {"n": "Равель", "full": "Морис Равель", "b": 1875, "d": 1937, "c": "Франция", "hist": [], "era": ["XX век", "Романтизм"], "img": "ravel.jpg", "lic": "Public domain", "qid": "Q1178"},
-  {"n": "Стравинский", "full": "Игорь Стравинский", "b": 1882, "d": 1971, "c": "Россия", "hist": ["Российская империя", "США", "Франция"], "era": ["XX век"], "img": "stravinskii.jpg", "lic": "Public domain", "qid": "Q7314"},
-  {"n": "Прокофьев", "full": "Сергей Прокофьев", "b": 1891, "d": 1953, "c": "Россия", "hist": ["Российская империя", "СССР"], "era": ["XX век"], "img": "prokofev.jpg", "lic": "Public domain", "qid": "Q49481"},
-  {"n": "Шостакович", "full": "Дмитрий Шостакович", "b": 1906, "d": 1975, "c": "Россия", "hist": ["Российская империя", "СССР"], "era": ["XX век"], "img": "shostakovich.jpg", "lic": "CC BY-SA 3.0 de", "qid": "Q80135"},
+  {"n": "Вивальди", "full": "Антонио Вивальди", "b": 1678, "d": 1741, "c": "Италия", "hist": ["Венецианская республика"], "era": ["Барокко"], "split": null, "img": "vivaldi.jpg", "lic": "Public domain", "qid": "Q1340"},
+  {"n": "Скарлатти", "full": "Доменико Скарлатти", "b": 1685, "d": 1757, "c": "Италия", "hist": ["Королевство Испания", "Неаполитанское королевство"], "era": ["Барокко"], "split": null, "img": "skarlatti.jpg", "lic": "Public domain", "qid": "Q167837"},
+  {"n": "Гендель", "full": "Георг Фридрих Гендель", "b": 1685, "d": 1759, "c": "Германия", "hist": ["Бранденбург-Пруссия", "Королевство Великобритания", "Священная Римская империя"], "era": ["Барокко"], "split": null, "img": "gendel.jpg", "lic": "Public domain", "qid": "Q7302"},
+  {"n": "Бах", "full": "Иоганн Себастьян Бах", "b": 1685, "d": 1750, "c": "Германия", "hist": ["Саксен-Эйзенах", "Священная Римская империя"], "era": ["Барокко"], "split": null, "img": "bah.jpg", "lic": "Public domain", "qid": "Q1339"},
+  {"n": "Гайдн", "full": "Йозеф Гайдн", "b": 1732, "d": 1809, "c": "Австрия", "hist": ["Священная Римская империя"], "era": ["Классицизм"], "split": null, "img": "gaidn.jpg", "lic": "Public domain", "qid": "Q7349"},
+  {"n": "Моцарт", "full": "Вольфганг Амадей Моцарт", "b": 1756, "d": 1791, "c": "Австрия", "hist": ["Зальцбургское архиепископство"], "era": ["Классицизм"], "split": null, "img": "mocart.jpg", "lic": "Public domain", "qid": "Q254"},
+  {"n": "Бетховен", "full": "Людвиг ван Бетховен", "b": 1770, "d": 1827, "c": "Германия", "hist": ["Австрийская империя", "Кёльнское курфюршество"], "era": ["Классицизм", "Романтизм"], "split": 1810, "img": "bethoven.jpg", "lic": "Public domain", "qid": "Q255"},
+  {"n": "Россини", "full": "Джоаккино Россини", "b": 1792, "d": 1868, "c": "Италия", "hist": ["Королевство Италия", "Папская область"], "era": ["Романтизм"], "split": null, "img": "rossini.jpg", "lic": "Public domain", "qid": "Q9726"},
+  {"n": "Шуберт", "full": "Франц Шуберт", "b": 1797, "d": 1828, "c": "Австрия", "hist": ["Австрийская империя", "Эрцгерцогство Австрия"], "era": ["Романтизм"], "split": null, "img": "shubert.jpg", "lic": "Public domain", "qid": "Q7312"},
+  {"n": "Глинка", "full": "Михаил Глинка", "b": 1804, "d": 1857, "c": "Россия", "hist": ["Российская империя"], "era": ["Романтизм"], "split": null, "img": "glinka.jpg", "lic": "Public domain", "qid": "Q181885"},
+  {"n": "Мендельсон", "full": "Феликс Мендельсон", "b": 1809, "d": 1847, "c": "Германия", "hist": ["Гамбург", "Королевство Саксония"], "era": ["Романтизм"], "split": null, "img": "mendelson.jpg", "lic": "Public domain", "qid": "Q46096"},
+  {"n": "Шопен", "full": "Фридерик Шопен", "b": 1810, "d": 1849, "c": "Польша", "hist": ["Варшавское герцогство", "Российская империя", "Франция"], "era": ["Романтизм"], "split": null, "img": "shopen.jpg", "lic": "Public domain", "qid": "Q1268"},
+  {"n": "Шуман", "full": "Роберт Шуман", "b": 1810, "d": 1856, "c": "Германия", "hist": ["Королевство Саксония"], "era": ["Романтизм"], "split": null, "img": "shuman.jpg", "lic": "Public domain", "qid": "Q7351"},
+  {"n": "Лист", "full": "Ференц Лист", "b": 1811, "d": 1886, "c": "Венгрия", "hist": ["Австрийская империя", "Австро-Венгрия", "Королевство Венгрия"], "era": ["Романтизм"], "split": null, "img": "list.jpg", "lic": "Public domain", "qid": "Q41309"},
+  {"n": "Верди", "full": "Джузеппе Верди", "b": 1813, "d": 1901, "c": "Италия", "hist": ["Королевство Италия"], "era": ["Романтизм"], "split": null, "img": "verdi.jpg", "lic": "Public domain", "qid": "Q7317"},
+  {"n": "Вагнер", "full": "Рихард Вагнер", "b": 1813, "d": 1883, "c": "Германия", "hist": ["Королевство Саксония"], "era": ["Романтизм"], "split": null, "img": "vagner.jpg", "lic": "Public domain", "qid": "Q1511"},
+  {"n": "Бородин", "full": "Александр Порфирьевич Бородин", "b": 1833, "d": 1887, "c": "Россия", "hist": ["Российская империя"], "era": ["Романтизм"], "split": null, "img": "borodin.jpg", "lic": "Public domain", "qid": "Q164004"},
+  {"n": "Брамс", "full": "Иоганнес Брамс", "b": 1833, "d": 1897, "c": "Германия", "hist": ["Гамбург"], "era": ["Романтизм"], "split": null, "img": "brams.jpg", "lic": "Public domain", "qid": "Q7294"},
+  {"n": "Бизе", "full": "Жорж Бизе", "b": 1838, "d": 1875, "c": "Франция", "hist": [], "era": ["Романтизм"], "split": null, "img": "bize.jpg", "lic": "Public domain", "qid": "Q56158"},
+  {"n": "Мусоргский", "full": "Модест Мусоргский", "b": 1839, "d": 1881, "c": "Россия", "hist": ["Российская империя"], "era": ["Романтизм"], "split": null, "img": "musorgskii.jpg", "lic": "Public domain", "qid": "Q132682"},
+  {"n": "Чайковский", "full": "Пётр Ильич Чайковский", "b": 1840, "d": 1893, "c": "Россия", "hist": ["Российская империя"], "era": ["Романтизм"], "split": null, "img": "chaikovskii.jpg", "lic": "Public domain", "qid": "Q7315"},
+  {"n": "Дворжак", "full": "Антонин Дворжак", "b": 1841, "d": 1904, "c": "Чехия", "hist": ["Королевство Богемия", "Цислейтания"], "era": ["Романтизм"], "split": null, "img": "dvorzhak.jpg", "lic": "Public domain", "qid": "Q7298"},
+  {"n": "Григ", "full": "Эдвард Григ", "b": 1843, "d": 1907, "c": "Норвегия", "hist": [], "era": ["Романтизм"], "split": null, "img": "grig.jpg", "lic": "No restrictions", "qid": "Q80621"},
+  {"n": "Римский-Корсаков", "full": "Николай Римский-Корсаков", "b": 1844, "d": 1908, "c": "Россия", "hist": ["Российская империя"], "era": ["Романтизм"], "split": null, "img": "rimskii-korsakov.jpg", "lic": "Public domain", "qid": "Q93227"},
+  {"n": "Дебюсси", "full": "Клод Дебюсси", "b": 1862, "d": 1918, "c": "Франция", "hist": [], "era": ["Романтизм", "XX век"], "split": 1900, "img": "debyussi.jpg", "lic": "Public domain", "qid": "Q4700"},
+  {"n": "Скрябин", "full": "Александр Скрябин", "b": 1872, "d": 1915, "c": "Россия", "hist": ["Российская империя"], "era": ["Романтизм", "XX век"], "split": 1900, "img": "skryabin.jpg", "lic": "Public domain", "qid": "Q185647"},
+  {"n": "Рахманинов", "full": "Сергей Рахманинов", "b": 1873, "d": 1943, "c": "Россия", "hist": ["Российская империя", "США"], "era": ["Романтизм", "XX век"], "split": 1900, "img": "rahmaninov.jpg", "lic": "Public domain", "qid": "Q131861"},
+  {"n": "Равель", "full": "Морис Равель", "b": 1875, "d": 1937, "c": "Франция", "hist": [], "era": ["Романтизм", "XX век"], "split": 1900, "img": "ravel.jpg", "lic": "Public domain", "qid": "Q1178"},
+  {"n": "Стравинский", "full": "Игорь Стравинский", "b": 1882, "d": 1971, "c": "Россия", "hist": ["Российская империя", "США", "Франция"], "era": ["XX век"], "split": null, "img": "stravinskii.jpg", "lic": "Public domain", "qid": "Q7314"},
+  {"n": "Прокофьев", "full": "Сергей Прокофьев", "b": 1891, "d": 1953, "c": "Россия", "hist": ["Российская империя", "СССР"], "era": ["XX век"], "split": null, "img": "prokofev.jpg", "lic": "Public domain", "qid": "Q49481"},
+  {"n": "Шостакович", "full": "Дмитрий Шостакович", "b": 1906, "d": 1975, "c": "Россия", "hist": ["Российская империя", "СССР"], "era": ["XX век"], "split": null, "img": "shostakovich.jpg", "lic": "CC BY-SA 3.0 de", "qid": "Q80135"},
+  {"n": "Щедрин", "full": "Родион Щедрин", "b": 1932, "d": 2025, "c": "Россия", "hist": ["Германия", "Литва", "СССР"], "era": ["XX век"], "split": null, "img": "schedrin.jpg", "lic": "CC BY 4.0", "qid": "Q165706"},
 ];
 
 const ERA_ORDER = ["Барокко", "Классицизм", "Романтизм", "XX век"];
@@ -222,13 +228,13 @@ const FLAG = {"Австрия":"🇦🇹","Венгрия":"🇭🇺","Герм�
               "Великобритания":"🇬🇧","США":"🇺🇸","Финляндия":"🇫🇮","Армения":"🇦🇲"};
 const flag = c => FLAG[c] || '';
 
-const Y0 = 1670, Y1 = 1985;
+const Y0 = 1670, Y1 = 2030;
 let NAMEW = 104;
 // Масштаб подбираем под ширину экрана, чтобы вся лента была видна сразу
 // и её не пришлось листать вбок. На узком телефоне не даём сжаться совсем.
 let PPY = 2.15;
 function fitScale(px){
-  NAMEW = px < 480 ? 86 : 104;
+  NAMEW = px < 480 ? 122 : 140;        // шире: слева от фамилии стоит флаг
   const avail = Math.max(240, px - NAMEW - 50);
   PPY = Math.min(2.6, Math.max(1.05, avail / (Y1 - Y0)));
 }
@@ -273,7 +279,8 @@ function renderLine(){
   const r2 = el('<div class="frow"><span class="flabel">Страна</span></div>');
   COUNTRIES.forEach(c => {
     const on = st.countries.has(c);
-    const b = el('<button class="chip' + (st.countries.size && !on ? ' off' : '') + '" aria-pressed="' + on + '">' + c + '</button>');
+    const b = el('<button class="chip' + (st.countries.size && !on ? ' off' : '') + '" aria-pressed="' + on + '">' +
+      '<span class="flag">' + flag(c) + '</span>' + c + '</button>');
     b.addEventListener('click', () => { on ? st.countries.delete(c) : st.countries.add(c); render(); });
     r2.appendChild(b);
   });
@@ -305,13 +312,24 @@ function renderLine(){
   }
   grid.appendChild(axis);
 
+  // Явная сетка по векам: по ней взгляд сразу привязывает полосу ко времени
+  [1700, 1800, 1900, 2000].forEach(y => {
+    const x = xOf(y);
+    if(x < NAMEW + 4 || x > gridW() - 4) return;
+    grid.appendChild(el('<div class="vline" style="left:' + x + 'px"></div>'));
+  });
+
   list.forEach(c => {
-    const row = el('<button class="row"><span class="nm">' + esc(c.n) + '</span></button>');
+    const row = el('<button class="row"><span class="nm"><span class="flag fcol" title="' + esc(c.c) + '">' +
+      flag(c.c) + '</span>' + esc(c.n) + '</span></button>');
     const left = xOf(c.b), w = Math.max(6, (c.d - c.b) * PPY);
     let bar;
     if(c.era.length > 1){
+      // Цвет меняется на самой границе эпох, а не на середине полосы:
+      // у Равеля романтизм занимает начало жизни, а не половину.
+      const cut = Math.round(((c.split - c.b) / (c.d - c.b)) * 100);
       bar = el('<div class="bar split" style="left:' + left + 'px;width:' + w + 'px;--a:var(' +
-        ERA_VAR[c.era[0]] + ');--b:var(' + ERA_VAR[c.era[1]] + ')"></div>');
+        ERA_VAR[c.era[0]] + ');--b:var(' + ERA_VAR[c.era[1]] + ');--cut:' + cut + '%"></div>');
     } else {
       bar = el('<div class="bar ' + ERA_CLASS[c.era[0]] + '" style="left:' + left + 'px;width:' + w + 'px"></div>');
     }
@@ -369,8 +387,8 @@ function renderWho(){
   if(same.length){
     const p = el('<div class="peers"></div>');
     same.forEach(x => {
-      const b = el('<button class="peer"><span class="flag">' + flag(x.c) + '</span>' + esc(x.n) +
-        ' <span style="color:var(--muted)">' + x.c + '</span></button>');
+      const b = el('<button class="peer" title="' + esc(x.c) + '"><span class="flag">' + flag(x.c) +
+        '</span>' + esc(x.n) + '</button>');
       b.addEventListener('click', () => { st.who = x.n; render(); });
       p.appendChild(b);
     });
