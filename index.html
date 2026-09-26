@@ -1,0 +1,547 @@
+<!doctype html>
+<html lang="ru">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="description" content="Лента жизни композиторов: эпохи, страны, современники. Для уроков музыкальной литературы.">
+<style>
+  :root{color-scheme:light dark; padding-top:env(safe-area-inset-top,0px); padding-bottom:env(safe-area-inset-bottom,0px);}
+  body{margin:0;}
+  img{max-width:100%;}
+  [hidden]{display:none !important;}
+</style>
+<title>Лента композиторов</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Literata:opsz,wght@7..72,400;7..72,600;7..72,700&family=PT+Sans:wght@400;700&family=PT+Mono&display=swap">
+<style>
+  :root{
+    --bg:#F1F0EA;
+    --surface:#FFFFFF;
+    --surface-2:#F7F6F1;
+    --ink:#16262B;
+    --muted:#5C6E74;
+    --line:#D9DAD2;
+    --accent:#1D6B67;
+    --e1:#A8761F;
+    --e2:#2F6FA8;
+    --e3:#9E3B4E;
+    --e4:#3F6F63;
+    --shadow:0 16px 36px -24px rgba(22,38,43,.5);
+  }
+  @media (prefers-color-scheme: dark){
+    :root:not([data-theme="light"]){
+      --bg:#111A1D; --surface:#1A2629; --surface-2:#152023;
+      --ink:#E9EFEE; --muted:#93A5A9; --line:#2B3A3E; --accent:#63C2B8;
+      --e1:#D8A44E; --e2:#6AA3D8; --e3:#D17186; --e4:#6FAF9C;
+      --shadow:0 16px 36px -24px rgba(0,0,0,.8);
+    }
+  }
+  :root[data-theme="dark"]{
+    --bg:#111A1D; --surface:#1A2629; --surface-2:#152023;
+    --ink:#E9EFEE; --muted:#93A5A9; --line:#2B3A3E; --accent:#63C2B8;
+    --e1:#D8A44E; --e2:#6AA3D8; --e3:#D17186; --e4:#6FAF9C;
+    --shadow:0 16px 36px -24px rgba(0,0,0,.8);
+  }
+
+  body{
+    background:var(--bg); color:var(--ink);
+    font-family:"PT Sans", system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
+    font-size:16px; line-height:1.5; -webkit-font-smoothing:antialiased;
+  }
+  .wrap{max-width:820px; margin:0 auto; padding:16px 14px 40px; display:flex; flex-direction:column; gap:14px;}
+
+  .head{display:flex; align-items:center; justify-content:space-between; gap:10px; flex-wrap:wrap;}
+  .brand{font-family:"Literata", Georgia, serif; font-weight:700; font-size:clamp(20px,5.5vw,26px); letter-spacing:-.01em;}
+  .tabs{display:flex; gap:6px;}
+  .tab{
+    font:inherit; font-size:14px; color:var(--muted); background:transparent;
+    border:1px solid var(--line); border-radius:9px; padding:6px 13px; cursor:pointer;
+  }
+  .tab[aria-selected="true"]{color:var(--surface); background:var(--ink); border-color:var(--ink);}
+  .tab:focus-visible, .chip:focus-visible, .row:focus-visible, .btn:focus-visible, .opt:focus-visible{outline:2px solid var(--accent); outline-offset:2px;}
+
+  .filters{display:flex; flex-direction:column; gap:7px;}
+  .frow{display:flex; gap:6px; flex-wrap:wrap; align-items:center;}
+  .flabel{font-family:"PT Mono", ui-monospace, monospace; font-size:10.5px; letter-spacing:.14em; text-transform:uppercase; color:var(--muted); margin-right:2px;}
+  .chip{
+    font:inherit; font-size:13px; color:var(--ink); background:var(--surface);
+    border:1px solid var(--line); border-radius:999px; padding:4px 11px; cursor:pointer;
+    display:inline-flex; align-items:center; gap:6px;
+  }
+  .chip .dot{width:8px; height:8px; border-radius:50%; flex:none;}
+  .chip[aria-pressed="true"]{border-color:var(--ink); background:var(--surface-2); font-weight:700;}
+  .chip.off{opacity:.45;}
+
+  .scroller{
+    background:var(--surface); border:1px solid var(--line); border-radius:14px;
+    box-shadow:var(--shadow); overflow-x:auto; overflow-y:hidden; position:relative;
+  }
+  .grid{position:relative;}
+  .axis{
+    position:sticky; top:0; z-index:3; height:26px;
+    background:var(--surface); border-bottom:1px solid var(--line);
+  }
+  .axis .tick{position:absolute; top:0; height:26px; border-left:1px solid var(--line);}
+  .axis .tick span{
+    position:absolute; left:4px; top:6px; font-family:"PT Mono", ui-monospace, monospace;
+    font-size:10.5px; color:var(--muted); white-space:nowrap;
+  }
+  .row{
+    position:relative; height:30px; width:100%; display:block; text-align:left;
+    font:inherit; color:inherit; background:transparent; border:0; cursor:pointer;
+    border-bottom:1px solid color-mix(in srgb, var(--line) 55%, transparent);
+  }
+  .row:hover{background:var(--surface-2);}
+  .row .nm{
+    position:sticky; left:0; z-index:2; display:inline-block; width:var(--namew,104px); padding-left:10px;
+    font-size:13px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
+    line-height:30px; background:linear-gradient(to right, var(--surface) 86%, transparent);
+  }
+  .row:hover .nm{background:linear-gradient(to right, var(--surface-2) 86%, transparent);}
+  .bar{
+    position:absolute; top:9px; height:12px; border-radius:6px;
+    display:flex; align-items:center;
+  }
+  .bar .yr{
+    position:absolute; right:calc(100% + 5px); font-family:"PT Mono", ui-monospace, monospace;
+    font-size:10px; color:var(--muted); white-space:nowrap;
+  }
+  .bar .yr2{position:absolute; left:calc(100% + 5px);}
+  .e1{background:var(--e1);} .e2{background:var(--e2);} .e3{background:var(--e3);} .e4{background:var(--e4);}
+  .bar.split{background:linear-gradient(to right, var(--a) 0 50%, var(--b) 50% 100%);}
+
+  .legend{display:flex; gap:12px; flex-wrap:wrap; font-size:12px; color:var(--muted);}
+  .legend i{display:inline-block; width:10px; height:10px; border-radius:3px; margin-right:5px; vertical-align:-1px;}
+
+  .card{background:var(--surface); border:1px solid var(--line); border-radius:14px; box-shadow:var(--shadow); padding:18px 16px; display:flex; flex-direction:column; gap:13px;}
+  .who{display:flex; gap:14px; align-items:flex-start;}
+  .who img{width:96px; height:96px; border-radius:10px; object-fit:cover; flex:none; background:var(--surface-2);}
+  .who .nmx{font-family:"Literata", Georgia, serif; font-weight:700; font-size:20px; line-height:1.2;}
+  .who .yrs{font-family:"PT Mono", ui-monospace, monospace; font-size:14px; color:var(--muted); margin-top:3px;}
+  .tagrow{display:flex; gap:6px; flex-wrap:wrap; margin-top:7px;}
+  .tag{font-size:12px; border:1px solid var(--line); border-radius:999px; padding:2px 9px; color:var(--muted);}
+  .tag.era{color:var(--surface); border:0;}
+
+  .sect{display:flex; flex-direction:column; gap:6px;}
+  .sect h3{margin:0; font-family:"PT Mono", ui-monospace, monospace; font-size:10.5px; letter-spacing:.14em; text-transform:uppercase; color:var(--muted); font-weight:400;}
+  .peers{display:flex; gap:6px; flex-wrap:wrap;}
+  .peer{font-size:13px; background:var(--surface-2); border:1px solid var(--line); border-radius:8px; padding:4px 9px; cursor:pointer; font-family:inherit; color:inherit;}
+  .peer:hover{border-color:var(--ink);}
+  .note{font-size:12.5px; color:var(--muted); line-height:1.45;}
+  .note a{color:var(--accent);}
+
+  .quest{font-family:"Literata", Georgia, serif; font-weight:600; font-size:clamp(17px,4.6vw,21px); line-height:1.3; text-wrap:balance;}
+  .opts{display:grid; gap:8px;}
+  .opt{
+    display:flex; align-items:center; gap:10px; width:100%; text-align:left; font:inherit;
+    color:var(--ink); background:var(--surface-2); border:1px solid var(--line);
+    border-radius:10px; padding:11px 12px; cursor:pointer;
+  }
+  .opt:hover:not(:disabled){border-color:var(--ink);}
+  .opt:disabled{cursor:default;}
+  .opt .num{font-family:"PT Mono", ui-monospace, monospace; font-size:11px; color:var(--muted); border:1px solid var(--line); border-radius:5px; width:20px; height:20px; display:grid; place-items:center; flex:none;}
+  .opt.ok{border-color:var(--accent); background:color-mix(in srgb, var(--accent) 13%, var(--surface));}
+  .opt.no{border-color:var(--e3); background:color-mix(in srgb, var(--e3) 12%, var(--surface));}
+  .opt.dim{opacity:.5;}
+  .why{font-size:13.5px; color:var(--muted); border-top:1px dashed var(--line); padding-top:12px;}
+  .why b{color:var(--ink);}
+  .btn{font:inherit; font-weight:700; color:var(--surface); background:var(--ink); border:1px solid var(--ink); border-radius:10px; padding:10px 18px; cursor:pointer;}
+  .btn.ghost{background:transparent; color:var(--ink);}
+  .rowb{display:flex; gap:8px; flex-wrap:wrap; align-items:center; justify-content:space-between;}
+  .score{font-family:"PT Mono", ui-monospace, monospace; font-size:13px; color:var(--muted);}
+  .lead{color:var(--muted); font-size:14.5px; max-width:56ch;}
+
+  @media (prefers-reduced-motion: reduce){ *{transition:none !important;} }
+</style>
+
+<div class="wrap">
+  <div class="head">
+    <div class="brand">Лента композиторов</div>
+    <div class="tabs">
+      <button class="tab" id="tab-line" aria-selected="true">Лента</button>
+      <button class="tab" id="tab-quiz" aria-selected="false">Задания</button>
+    </div>
+  </div>
+  <div id="app"></div>
+</div>
+
+<script>
+/* Композиторы. Годы жизни и страны выгружены из Викиданных: у каждой
+   записи есть идентификатор (qid), по которому цифру можно проверить.
+   Эпохи проставлены по годам творчества — границы условные, и игра
+   об этом говорит прямо. Страна дана школьная, историческая рядом. */
+const COMPOSERS = [
+  {"n": "Вивальди", "full": "Антонио Вивальди", "b": 1678, "d": 1741, "c": "Италия", "hist": ["Венецианская республика"], "era": ["Барокко"], "img": "vivaldi.jpg", "lic": "Public domain", "qid": "Q1340"},
+  {"n": "Гендель", "full": "Георг Фридрих Гендель", "b": 1685, "d": 1759, "c": "Германия", "hist": ["Бранденбург-Пруссия", "Королевство Великобритания", "Священная Римская империя"], "era": ["Барокко"], "img": "gendel.jpg", "lic": "Public domain", "qid": "Q7302"},
+  {"n": "Бах", "full": "Иоганн Себастьян Бах", "b": 1685, "d": 1750, "c": "Германия", "hist": ["Саксен-Эйзенах", "Священная Римская империя"], "era": ["Барокко"], "img": "bah.jpg", "lic": "Public domain", "qid": "Q1339"},
+  {"n": "Гайдн", "full": "Йозеф Гайдн", "b": 1732, "d": 1809, "c": "Австрия", "hist": ["Священная Римская империя"], "era": ["Классицизм"], "img": "gaidn.jpg", "lic": "Public domain", "qid": "Q7349"},
+  {"n": "Моцарт", "full": "Вольфганг Амадей Моцарт", "b": 1756, "d": 1791, "c": "Австрия", "hist": ["Зальцбургское архиепископство"], "era": ["Классицизм"], "img": "mocart.jpg", "lic": "Public domain", "qid": "Q254"},
+  {"n": "Бетховен", "full": "Людвиг ван Бетховен", "b": 1770, "d": 1827, "c": "Германия", "hist": ["Австрийская империя", "Кёльнское курфюршество"], "era": ["Классицизм", "Романтизм"], "img": "bethoven.jpg", "lic": "Public domain", "qid": "Q255"},
+  {"n": "Россини", "full": "Джоаккино Россини", "b": 1792, "d": 1868, "c": "Италия", "hist": ["Королевство Италия", "Папская область"], "era": ["Романтизм"], "img": "rossini.jpg", "lic": "Public domain", "qid": "Q9726"},
+  {"n": "Шуберт", "full": "Франц Шуберт", "b": 1797, "d": 1828, "c": "Австрия", "hist": ["Австрийская империя", "Эрцгерцогство Австрия"], "era": ["Романтизм"], "img": "shubert.jpg", "lic": "Public domain", "qid": "Q7312"},
+  {"n": "Глинка", "full": "Михаил Глинка", "b": 1804, "d": 1857, "c": "Россия", "hist": ["Российская империя"], "era": ["Романтизм"], "img": "glinka.jpg", "lic": "Public domain", "qid": "Q181885"},
+  {"n": "Мендельсон", "full": "Феликс Мендельсон", "b": 1809, "d": 1847, "c": "Германия", "hist": ["Гамбург", "Королевство Саксония"], "era": ["Романтизм"], "img": "mendelson.jpg", "lic": "Public domain", "qid": "Q46096"},
+  {"n": "Шопен", "full": "Фридерик Шопен", "b": 1810, "d": 1849, "c": "Польша", "hist": ["Варшавское герцогство", "Российская империя", "Франция"], "era": ["Романтизм"], "img": "shopen.jpg", "lic": "Public domain", "qid": "Q1268"},
+  {"n": "Шуман", "full": "Роберт Шуман", "b": 1810, "d": 1856, "c": "Германия", "hist": ["Королевство Саксония"], "era": ["Романтизм"], "img": "shuman.jpg", "lic": "Public domain", "qid": "Q7351"},
+  {"n": "Лист", "full": "Ференц Лист", "b": 1811, "d": 1886, "c": "Венгрия", "hist": ["Австрийская империя", "Австро-Венгрия", "Королевство Венгрия"], "era": ["Романтизм"], "img": "list.jpg", "lic": "Public domain", "qid": "Q41309"},
+  {"n": "Вагнер", "full": "Рихард Вагнер", "b": 1813, "d": 1883, "c": "Германия", "hist": ["Королевство Саксония"], "era": ["Романтизм"], "img": "vagner.jpg", "lic": "Public domain", "qid": "Q1511"},
+  {"n": "Верди", "full": "Джузеппе Верди", "b": 1813, "d": 1901, "c": "Италия", "hist": ["Королевство Италия"], "era": ["Романтизм"], "img": "verdi.jpg", "lic": "Public domain", "qid": "Q7317"},
+  {"n": "Брамс", "full": "Иоганнес Брамс", "b": 1833, "d": 1897, "c": "Германия", "hist": ["Гамбург"], "era": ["Романтизм"], "img": "brams.jpg", "lic": "Public domain", "qid": "Q7294"},
+  {"n": "Бородин", "full": "Александр Порфирьевич Бородин", "b": 1833, "d": 1887, "c": "Россия", "hist": ["Российская империя"], "era": ["Романтизм"], "img": "borodin.jpg", "lic": "Public domain", "qid": "Q164004"},
+  {"n": "Бизе", "full": "Жорж Бизе", "b": 1838, "d": 1875, "c": "Франция", "hist": [], "era": ["Романтизм"], "img": "bize.jpg", "lic": "Public domain", "qid": "Q56158"},
+  {"n": "Мусоргский", "full": "Модест Мусоргский", "b": 1839, "d": 1881, "c": "Россия", "hist": ["Российская империя"], "era": ["Романтизм"], "img": "musorgskii.jpg", "lic": "Public domain", "qid": "Q132682"},
+  {"n": "Чайковский", "full": "Пётр Ильич Чайковский", "b": 1840, "d": 1893, "c": "Россия", "hist": ["Российская империя"], "era": ["Романтизм"], "img": "chaikovskii.jpg", "lic": "Public domain", "qid": "Q7315"},
+  {"n": "Дворжак", "full": "Антонин Дворжак", "b": 1841, "d": 1904, "c": "Чехия", "hist": ["Королевство Богемия", "Цислейтания"], "era": ["Романтизм"], "img": "dvorzhak.jpg", "lic": "Public domain", "qid": "Q7298"},
+  {"n": "Григ", "full": "Эдвард Григ", "b": 1843, "d": 1907, "c": "Норвегия", "hist": [], "era": ["Романтизм"], "img": "grig.jpg", "lic": "No restrictions", "qid": "Q80621"},
+  {"n": "Римский-Корсаков", "full": "Николай Римский-Корсаков", "b": 1844, "d": 1908, "c": "Россия", "hist": ["Российская империя"], "era": ["Романтизм"], "img": "rimskii-korsakov.jpg", "lic": "Public domain", "qid": "Q93227"},
+  {"n": "Дебюсси", "full": "Клод Дебюсси", "b": 1862, "d": 1918, "c": "Франция", "hist": [], "era": ["Романтизм", "XX век"], "img": "debyussi.jpg", "lic": "Public domain", "qid": "Q4700"},
+  {"n": "Скрябин", "full": "Александр Скрябин", "b": 1872, "d": 1915, "c": "Россия", "hist": ["Российская империя"], "era": ["Романтизм", "XX век"], "img": "skryabin.jpg", "lic": "Public domain", "qid": "Q185647"},
+  {"n": "Рахманинов", "full": "Сергей Рахманинов", "b": 1873, "d": 1943, "c": "Россия", "hist": ["Российская империя", "США"], "era": ["XX век", "Романтизм"], "img": "rahmaninov.jpg", "lic": "Public domain", "qid": "Q131861"},
+  {"n": "Равель", "full": "Морис Равель", "b": 1875, "d": 1937, "c": "Франция", "hist": [], "era": ["XX век", "Романтизм"], "img": "ravel.jpg", "lic": "Public domain", "qid": "Q1178"},
+  {"n": "Стравинский", "full": "Игорь Стравинский", "b": 1882, "d": 1971, "c": "Россия", "hist": ["Российская империя", "США", "Франция"], "era": ["XX век"], "img": "stravinskii.jpg", "lic": "Public domain", "qid": "Q7314"},
+  {"n": "Прокофьев", "full": "Сергей Прокофьев", "b": 1891, "d": 1953, "c": "Россия", "hist": ["Российская империя", "СССР"], "era": ["XX век"], "img": "prokofev.jpg", "lic": "Public domain", "qid": "Q49481"},
+  {"n": "Шостакович", "full": "Дмитрий Шостакович", "b": 1906, "d": 1975, "c": "Россия", "hist": ["Российская империя", "СССР"], "era": ["XX век"], "img": "shostakovich.jpg", "lic": "CC BY-SA 3.0 de", "qid": "Q80135"},
+];
+
+const ERA_ORDER = ["Барокко", "Классицизм", "Романтизм", "XX век"];
+const ERA_CLASS = {"Барокко":"e1", "Классицизм":"e2", "Романтизм":"e3", "XX век":"e4"};
+const ERA_VAR = {"Барокко":"--e1", "Классицизм":"--e2", "Романтизм":"--e3", "XX век":"--e4"};
+
+const Y0 = 1670, Y1 = 1985;
+let NAMEW = 104;
+// Масштаб подбираем под ширину экрана, чтобы вся лента была видна сразу
+// и её не пришлось листать вбок. На узком телефоне не даём сжаться совсем.
+let PPY = 2.15;
+function fitScale(px){
+  NAMEW = px < 480 ? 86 : 104;
+  const avail = Math.max(240, px - NAMEW - 50);
+  PPY = Math.min(2.6, Math.max(1.05, avail / (Y1 - Y0)));
+}
+const gridW = () => NAMEW + (Y1 - Y0) * PPY + 44;
+const xOf = y => NAMEW + (y - Y0) * PPY;
+
+const app = document.getElementById('app');
+const tabLine = document.getElementById('tab-line');
+const tabQuiz = document.getElementById('tab-quiz');
+
+const el = h => { const t = document.createElement('template'); t.innerHTML = h.trim(); return t.content.firstElementChild; };
+const esc = s => String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+const shuffle = a => { const r = a.slice(); for(let i=r.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[r[i],r[j]]=[r[j],r[i]];} return r; };
+const pick = a => a[Math.floor(Math.random()*a.length)];
+const overlap = (a, b) => Math.min(a.d, b.d) - Math.max(a.b, b.b);
+
+const COUNTRIES = [...new Set(COMPOSERS.map(c => c.c))].sort((a,b) => a.localeCompare(b,'ru'));
+
+let st = {tab:'line', eras:new Set(), countries:new Set(), who:null, quiz:null};
+
+function visible(){
+  return COMPOSERS.filter(c =>
+    (!st.eras.size || c.era.some(e => st.eras.has(e))) &&
+    (!st.countries.size || st.countries.has(c.c)));
+}
+
+/* ——— Лента ——— */
+function renderLine(){
+  const box = el('<div style="display:flex;flex-direction:column;gap:12px"></div>');
+
+  const f = el('<div class="filters"></div>');
+  const r1 = el('<div class="frow"><span class="flabel">Эпоха</span></div>');
+  ERA_ORDER.forEach(e => {
+    const on = st.eras.has(e);
+    const b = el('<button class="chip' + (st.eras.size && !on ? ' off' : '') + '" aria-pressed="' + on + '">' +
+      '<span class="dot" style="background:var(' + ERA_VAR[e] + ')"></span>' + e + '</button>');
+    b.addEventListener('click', () => { on ? st.eras.delete(e) : st.eras.add(e); render(); });
+    r1.appendChild(b);
+  });
+  f.appendChild(r1);
+
+  const r2 = el('<div class="frow"><span class="flabel">Страна</span></div>');
+  COUNTRIES.forEach(c => {
+    const on = st.countries.has(c);
+    const b = el('<button class="chip' + (st.countries.size && !on ? ' off' : '') + '" aria-pressed="' + on + '">' + c + '</button>');
+    b.addEventListener('click', () => { on ? st.countries.delete(c) : st.countries.add(c); render(); });
+    r2.appendChild(b);
+  });
+  if(st.eras.size || st.countries.size){
+    const b = el('<button class="chip" style="border-style:dashed">сбросить</button>');
+    b.addEventListener('click', () => { st.eras.clear(); st.countries.clear(); render(); });
+    r2.appendChild(b);
+  }
+  f.appendChild(r2);
+  box.appendChild(f);
+
+  const list = visible();
+  fitScale(app.clientWidth || document.documentElement.clientWidth || 600);
+  const scroller = el('<div class="scroller"></div>');
+  const grid = el('<div class="grid" style="width:' + gridW() + 'px;--namew:' + NAMEW + 'px"></div>');
+
+  const axis = el('<div class="axis"></div>');
+  const stepY = PPY < 1.5 ? 100 : 50;
+  for(let y = 1700; y <= 1950; y += stepY){
+    const t = el('<div class="tick" style="left:' + xOf(y) + 'px"><span>' + y + '</span></div>');
+    axis.appendChild(t);
+  }
+  grid.appendChild(axis);
+
+  list.forEach(c => {
+    const row = el('<button class="row"><span class="nm">' + esc(c.n) + '</span></button>');
+    const left = xOf(c.b), w = Math.max(6, (c.d - c.b) * PPY);
+    let bar;
+    if(c.era.length > 1){
+      bar = el('<div class="bar split" style="left:' + left + 'px;width:' + w + 'px;--a:var(' +
+        ERA_VAR[c.era[0]] + ');--b:var(' + ERA_VAR[c.era[1]] + ')"></div>');
+    } else {
+      bar = el('<div class="bar ' + ERA_CLASS[c.era[0]] + '" style="left:' + left + 'px;width:' + w + 'px"></div>');
+    }
+    bar.appendChild(el('<span class="yr">' + c.b + '</span>'));
+    bar.appendChild(el('<span class="yr yr2">' + c.d + '</span>'));
+    row.appendChild(bar);
+    row.addEventListener('click', () => { st.who = c.n; render(); });
+    grid.appendChild(row);
+  });
+
+  if(!list.length) grid.appendChild(el('<div style="padding:18px" class="lead">С такими фильтрами никого не осталось. Сбрось что-нибудь.</div>'));
+  scroller.appendChild(grid);
+  box.appendChild(scroller);
+
+  const leg = el('<div class="legend"></div>');
+  ERA_ORDER.forEach(e => leg.appendChild(el('<span><i style="background:var(' + ERA_VAR[e] + ')"></i>' + e + '</span>')));
+  leg.appendChild(el('<span>Полоса из двух цветов — композитор работал на рубеже эпох</span>'));
+  box.appendChild(leg);
+  box.appendChild(el('<div class="lead">Нажми на любого, чтобы увидеть портрет, страну и тех, кто жил в то же время. Границы эпох условные: их проводят по-разному, и жизнь композитора редко умещается точно внутрь.</div>'));
+
+  app.appendChild(box);
+}
+
+/* ——— Карточка ——— */
+function renderWho(){
+  const c = COMPOSERS.find(x => x.n === st.who);
+  const card = el('<div class="card"></div>');
+  const back = el('<button class="btn ghost" style="align-self:flex-start">← к ленте</button>');
+  back.addEventListener('click', () => { st.who = null; render(); });
+  card.appendChild(back);
+
+  const who = el('<div class="who"></div>');
+  who.appendChild(el('<img src="portraits/' + c.img + '" alt="' + esc(c.full) + '" loading="lazy">'));
+  const info = el('<div></div>');
+  info.appendChild(el('<div class="nmx">' + esc(c.full) + '</div>'));
+  info.appendChild(el('<div class="yrs">' + c.b + ' — ' + c.d + ' · ' + (c.d - c.b) + ' лет</div>'));
+  const tags = el('<div class="tagrow"></div>');
+  c.era.forEach(e => tags.appendChild(el('<span class="tag era" style="background:var(' + ERA_VAR[e] + ')">' + e + '</span>')));
+  tags.appendChild(el('<span class="tag">' + c.c + '</span>'));
+  info.appendChild(tags);
+  who.appendChild(info);
+  card.appendChild(who);
+
+  if(c.hist.length){
+    const s = el('<div class="sect"><h3>Как называлась страна тогда</h3></div>');
+    s.appendChild(el('<div class="note">' + esc(c.hist.join(', ')) + '. Современных границ в те годы ещё не было — «' + esc(c.c) + '» мы говорим для удобства.</div>'));
+    card.appendChild(s);
+  }
+
+  const same = COMPOSERS.filter(x => x.n !== c.n && overlap(x, c) >= 15).sort((a,b) => a.b - b.b);
+  const s2 = el('<div class="sect"><h3>Жили одновременно с ним</h3></div>');
+  if(same.length){
+    const p = el('<div class="peers"></div>');
+    same.forEach(x => {
+      const b = el('<button class="peer">' + esc(x.n) + ' <span style="color:var(--muted)">' + x.c + '</span></button>');
+      b.addEventListener('click', () => { st.who = x.n; render(); });
+      p.appendChild(b);
+    });
+    s2.appendChild(p);
+  } else s2.appendChild(el('<div class="note">Среди наших — никого: он один в своём времени.</div>'));
+  card.appendChild(s2);
+
+  const land = COMPOSERS.filter(x => x.n !== c.n && x.c === c.c).sort((a,b) => a.b - b.b);
+  if(land.length){
+    const s3 = el('<div class="sect"><h3>Из той же страны</h3></div>');
+    const p = el('<div class="peers"></div>');
+    land.forEach(x => {
+      const b = el('<button class="peer">' + esc(x.n) + ' <span style="color:var(--muted)">' + x.b + '</span></button>');
+      b.addEventListener('click', () => { st.who = x.n; render(); });
+      p.appendChild(b);
+    });
+    s3.appendChild(p);
+    card.appendChild(s3);
+  }
+
+  card.appendChild(el('<div class="note">Годы жизни и страна — из Викиданных, запись ' + c.qid +
+    '. Портрет: ' + esc(c.lic) + '.</div>'));
+  app.appendChild(card);
+}
+
+/* ——— Задания ———
+   Три вопроса ровно про то, что должна показать лента: эпоха, страна,
+   современники. Варианты собираются из данных, а не пишутся руками.      */
+const ROUND = 8;
+
+function plural(n, one, few, many){        // 1 год, 24 года, 15 лет
+  const a = n % 10, b = n % 100;
+  if(a === 1 && b !== 11) return one;
+  if(a >= 2 && a <= 4 && (b < 10 || b >= 20)) return few;
+  return many;
+}
+
+function qEra(){
+  for(let t = 0; t < 80; t++){
+    const c = pick(COMPOSERS);
+    const same = COMPOSERS.filter(x => x.n !== c.n && x.era.some(e => c.era.includes(e)));
+    const other = COMPOSERS.filter(x => !x.era.some(e => c.era.includes(e)));
+    if(!same.length || other.length < 3) continue;
+    const right = pick(same);
+    const wrong = shuffle(other).slice(0, 3);
+    return {
+      ask: c.n + ': кто творил в ту же эпоху?',
+      sub: c.n + ' — ' + c.era.join(' и ') + ', ' + c.b + '–' + c.d,
+      options: shuffle([right, ...wrong]).map(x => x.n),
+      answer: right.n,
+      why: right.n + ' — ' + right.era.join(' и ') + ', ' + right.b + '–' + right.d +
+           '. Общая эпоха: ' + right.era.filter(e => c.era.includes(e)).join(', ') + '.'
+    };
+  }
+  return qCountry();
+}
+
+function qCountry(){
+  for(let t = 0; t < 80; t++){
+    const c = pick(COMPOSERS);
+    const same = COMPOSERS.filter(x => x.n !== c.n && x.c === c.c);
+    const other = COMPOSERS.filter(x => x.c !== c.c);
+    if(!same.length || other.length < 3) continue;
+    const right = pick(same);
+    const wrong = shuffle(other).slice(0, 3);
+    return {
+      ask: c.n + ': кто жил в той же стране?',
+      sub: c.n + ' — ' + c.c,
+      options: shuffle([right, ...wrong]).map(x => x.n),
+      answer: right.n,
+      why: right.n + ' — тоже ' + right.c + '. Остальные: ' +
+           wrong.map(x => x.n + ' — ' + x.c).join(', ') + '.'
+    };
+  }
+  return qEra();
+}
+
+function qPeer(){
+  for(let t = 0; t < 120; t++){
+    const c = pick(COMPOSERS);
+    // современник — жизни пересекаются надолго, но страна другая:
+    // иначе вопрос решается по стране, а не по времени
+    const same = COMPOSERS.filter(x => x.n !== c.n && x.c !== c.c && overlap(x, c) >= 20);
+    const other = COMPOSERS.filter(x => x.n !== c.n && overlap(x, c) < 0);
+    if(!same.length || other.length < 3) continue;
+    const right = pick(same);
+    const wrong = shuffle(other).slice(0, 3);
+    const from = Math.max(right.b, c.b), to = Math.min(right.d, c.d);
+    return {
+      ask: c.n + ': кто был его современником?',
+      sub: c.n + ' — ' + c.b + '–' + c.d + ', ' + c.c,
+      options: shuffle([right, ...wrong]).map(x => x.n),
+      answer: right.n,
+      why: right.n + ' — ' + right.b + '–' + right.d + ', ' + right.c +
+           '. Их жизни пересеклись на ' + (to - from) + ' ' + plural(to - from, 'год', 'года', 'лет') +
+           ', с ' + from + ' по ' + to + ', и при этом страны разные. ' +
+           'Остальные трое жили в другое время — с этими годами их годы не совпадают.'
+    };
+  }
+  return qEra();
+}
+
+const QKINDS = [qEra, qCountry, qPeer];
+
+function newQuiz(){
+  const deck = [];
+  let guard = 0;
+  while(deck.length < ROUND && guard++ < 300){
+    const q = QKINDS[deck.length % QKINDS.length]();
+    if(!q || !q.options.includes(q.answer)) continue;
+    if(new Set(q.options).size !== q.options.length) continue;
+    if(deck.some(x => x.ask === q.ask && x.answer === q.answer)) continue;
+    deck.push(q);
+  }
+  return {deck, i:0, picks:[]};
+}
+
+function renderQuiz(){
+  if(!st.quiz) st.quiz = newQuiz();
+  const q = st.quiz.deck[st.quiz.i];
+  const picked = st.quiz.picks[st.quiz.i];
+  const done = picked !== undefined;
+
+  if(!q){
+    const right = st.quiz.picks.filter((p, i) => p === st.quiz.deck[i].answer).length;
+    const card = el('<div class="card"></div>');
+    card.appendChild(el('<div class="quest">' + right + ' из ' + st.quiz.deck.length + '</div>'));
+    card.appendChild(el('<div class="lead">Ошибки видно на ленте: там сразу понятно, кто с кем совпал по времени.</div>'));
+    const r = el('<div class="rowb"></div>');
+    const again = el('<button class="btn">Ещё круг</button>');
+    again.addEventListener('click', () => { st.quiz = newQuiz(); render(); });
+    const toLine = el('<button class="btn ghost">К ленте</button>');
+    toLine.addEventListener('click', () => { st.tab = 'line'; render(); });
+    r.appendChild(again); r.appendChild(toLine);
+    card.appendChild(r);
+    app.appendChild(card);
+    return;
+  }
+
+  const card = el('<div class="card"></div>');
+  const rightSoFar = st.quiz.picks.filter((p, i) => p === st.quiz.deck[i].answer).length;
+  card.appendChild(el('<div class="rowb"><span class="score">Вопрос ' + (st.quiz.i + 1) + ' из ' +
+    st.quiz.deck.length + '</span><span class="score">' + rightSoFar + ' верно</span></div>'));
+  card.appendChild(el('<div class="quest">' + esc(q.ask) + '</div>'));
+  card.appendChild(el('<div class="note">' + esc(q.sub) + '</div>'));
+
+  const opts = el('<div class="opts"></div>');
+  q.options.forEach((o, i) => {
+    const b = el('<button class="opt"><span class="num">' + (i + 1) + '</span><span>' + esc(o) + '</span></button>');
+    if(done){
+      b.disabled = true;
+      if(o === q.answer) b.classList.add('ok');
+      else if(o === picked) b.classList.add('no');
+      else b.classList.add('dim');
+    } else b.addEventListener('click', () => { st.quiz.picks[st.quiz.i] = o; render(); });
+    opts.appendChild(b);
+  });
+  card.appendChild(opts);
+
+  if(done){
+    card.appendChild(el('<div class="why"><b>' + (picked === q.answer ? 'Верно.' : 'Не так.') + '</b> ' + esc(q.why) + '</div>'));
+    const nb = el('<button class="btn" style="align-self:flex-start">' +
+      (st.quiz.i === st.quiz.deck.length - 1 ? 'Итог' : 'Дальше') + '</button>');
+    nb.addEventListener('click', () => { st.quiz.i++; render(); });
+    card.appendChild(nb);
+    app.appendChild(card);
+    nb.focus({preventScroll:true});
+    return;
+  }
+  app.appendChild(card);
+}
+
+/* ——— Переключение ——— */
+function render(){
+  app.innerHTML = '';
+  tabLine.setAttribute('aria-selected', st.tab === 'line');
+  tabQuiz.setAttribute('aria-selected', st.tab === 'quiz');
+  if(st.tab === 'quiz') return renderQuiz();
+  if(st.who) return renderWho();
+  renderLine();
+}
+tabLine.addEventListener('click', () => { st.tab = 'line'; st.who = null; render(); });
+tabQuiz.addEventListener('click', () => { st.tab = 'quiz'; render(); });
+
+document.addEventListener('keydown', e => {
+  if(st.tab !== 'quiz' || !st.quiz) return;
+  const q = st.quiz.deck[st.quiz.i];
+  if(!q) return;
+  if(e.key === 'Enter' && st.quiz.picks[st.quiz.i] !== undefined){ st.quiz.i++; render(); return; }
+  if(e.key >= '1' && e.key <= '4' && st.quiz.picks[st.quiz.i] === undefined){
+    const o = q.options[+e.key - 1];
+    if(o){ st.quiz.picks[st.quiz.i] = o; render(); }
+  }
+});
+
+if(window.claude && window.claude.hot) window.claude.hot.snapshot(() => ({tab:st.tab, who:st.who}));
+let rt;
+window.addEventListener('resize', () => { clearTimeout(rt); rt = setTimeout(() => { if(st.tab === 'line' && !st.who) render(); }, 160); });
+render();
+</script>
+
+</html>
